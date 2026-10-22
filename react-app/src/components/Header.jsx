@@ -1,35 +1,54 @@
 import React from 'react';
-import { Layers, Sparkles } from 'lucide-react';
+import { Compass, Sparkles, Heart } from 'lucide-react';
 
 /**
  * Header Component
- * Concept: Functional Component & Props
- * - In React, components are simple JavaScript functions that return JSX.
- * - 'props' are passed into the function just like arguments.
+ * Concept: Functional Components & Props
+ * - Receives `daysOfFriendship` and `coreMemoriesCount` as props from parent App.
+ * - Displays branding and dynamic friendship counters.
  */
-export default function Header({ totalTasks, completedTasks }) {
+export default function Header({ daysOfFriendship, coreMemoriesCount }) {
   return (
     <header className="app-header glass-panel">
       <div className="brand-wrapper">
         <div className="brand-icon">
-          <Layers size={24} />
+          <Compass size={28} />
         </div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <h1 className="brand-title">PulseTask</h1>
-            <span className="brand-tag">React Edition</span>
+            <h1 className="brand-title">Timeline</h1>
+            <span style={{
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              background: 'rgba(245, 158, 11, 0.2)',
+              color: '#fbbf24',
+              padding: '0.2rem 0.6rem',
+              borderRadius: '9999px',
+              border: '1px solid rgba(245, 158, 11, 0.3)'
+            }}>
+              React Edition
+            </span>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-            Agile Task & Learning Dashboard
+          <p className="brand-subtitle">
+            Every laugh, late-night trip & milestone with my best friend
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Progress</div>
-          <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-main)' }}>
-            {completedTasks} / {totalTasks} Completed
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="friendship-counter-pill">
+          <Sparkles size={18} color="#fbbf24" />
+          <div>
+            <div className="counter-number">{daysOfFriendship.toLocaleString()}</div>
+            <div className="counter-label">Days of Friendship</div>
+          </div>
+        </div>
+
+        <div className="friendship-counter-pill" style={{ borderColor: 'rgba(244, 63, 94, 0.3)', background: 'rgba(244, 63, 94, 0.1)' }}>
+          <Heart size={18} color="#f43f5e" fill="#f43f5e" />
+          <div>
+            <div className="counter-number" style={{ color: '#fb7185' }}>{coreMemoriesCount}</div>
+            <div className="counter-label">Core Memories</div>
           </div>
         </div>
       </div>

@@ -1,47 +1,51 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-hand: 'Caveat', cursive;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Palette */
-  --bg-app: #0b0f17;
-  --bg-surface: #111827;
-  --bg-surface-elevated: #1a2234;
-  --bg-surface-hover: #222d44;
+  /* Color Palette - Nostalgic, warm, modern dark mode */
+  --bg-app: #080b11;
+  --bg-surface: #0f1523;
+  --bg-surface-elevated: #172033;
+  --bg-surface-hover: #1f2b45;
   
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(99, 102, 241, 0.4);
+  --border-active: rgba(245, 158, 11, 0.4);
   
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.25);
+  --primary: #f59e0b; /* Warm Amber */
+  --primary-hover: #d97706;
+  --primary-glow: rgba(245, 158, 11, 0.25);
+
+  --accent-rose: #f43f5e;
+  --accent-purple: #8b5cf6;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
   
   --text-main: #f9fafb;
-  --text-muted: #9ca3af;
-  --text-faint: #6b7280;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
   
-  /* Status Colors */
-  --status-todo-bg: rgba(148, 163, 184, 0.12);
-  --status-todo-text: #cbd5e1;
-  --status-prog-bg: rgba(59, 130, 246, 0.15);
-  --status-prog-text: #60a5fa;
-  --status-done-bg: rgba(34, 197, 94, 0.15);
-  --status-done-text: #4ade80;
-
-  /* Priority Colors */
-  --priority-high: #f43f5e;
-  --priority-med: #f59e0b;
-  --priority-low: #10b981;
+  /* Mood Colors */
+  --mood-laughter-bg: rgba(234, 179, 8, 0.15);
+  --mood-laughter-text: #facc15;
+  --mood-adventure-bg: rgba(16, 185, 129, 0.15);
+  --mood-adventure-text: #34d399;
+  --mood-deep-bg: rgba(139, 92, 246, 0.15);
+  --mood-deep-text: #c084fc;
+  --mood-milestone-bg: rgba(244, 63, 94, 0.15);
+  --mood-milestone-text: #fb7185;
 
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
   
   --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-subtle);
-  --shadow-hover: 0 8px 30px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--border-active);
-  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-hover: 0 12px 35px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--border-active);
+  --shadow-core: 0 0 25px rgba(245, 158, 11, 0.2), 0 0 0 1px rgba(245, 158, 11, 0.5);
+  --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -55,11 +59,11 @@ body {
   background-color: var(--bg-app);
   color: var(--text-main);
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -72,12 +76,11 @@ body {
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-active);
+  background: var(--primary);
 }
 
-/* Glassmorphism helpers */
 .glass-panel {
-  background: rgba(17, 24, 39, 0.85);
+  background: rgba(15, 21, 35, 0.85);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -103,3 +106,7 @@ input, textarea, select {
   to { transform: rotate(360deg); }
 }
 
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}

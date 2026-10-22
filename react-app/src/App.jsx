@@ -1,34 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
-import StatsRibbon from './components/StatsRibbon';
-import TaskCard from './components/TaskCard';
-import TaskModal from './components/TaskModal';
+import MilestonesRibbon from './components/MilestonesRibbon';
+import MemoryCard from './components/MemoryCard';
+import MemoryModal from './components/MemoryModal';
 import LearningBanner from './components/LearningBanner';
-import { Plus, Search, AlertCircle, RefreshCw } from 'lucide-react';
+import { Plus, Search, Sparkles, LayoutGrid, GitCommit, Heart, AlertCircle, RefreshCw, Shuffle } from 'lucide-react';
 import './App.css';
 
 export default function App() {
-  // State: Memory of the Component
-  const [tasks, setTasks] = useState([]);
+  // State: Component memory
+  const [memories, setMemories] = useState([]);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [moodFilter, setMoodFilter] = useState('All');
+  const [coreOnly, setCoreOnly] = useState(false);
+  const [viewMode, setViewMode] = useState('river'); // 'river' or 'grid'
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [highlightedId, setHighlightedId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Side Effect: Fetch tasks from the shared backend API on mount
-  const fetchTasks = async () => {
+  // Fetch memories from backend API
+  const fetchMemories = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/tasks');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await fetch('/api/memories');
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
       const data = await response.json();
-      setTasks(data);
+      setMemories(data);
     } catch (err) {
-      console.error('Failed to load tasks:', err);
+      console.error('Failed to load memories:', err);
       setError('Could not connect to backend server. Make sure it is running on port 5000.');
     } finally {
       setIsLoading(false);
@@ -36,121 +37,203 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchTasks();
+    fetchMemories();
   }, []);
 
-  // Handler: Create Task (POST to backend)
-  const handleAddTask = async (taskData) => {
+  // Handler: Add Memory (POST)
+  const handleAddMemory = async (memoryData) => {
     try {
-      const response = await fetch('/api/tasks', {
+      const response = await fetch('/api/memories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData)
+        body: JSON.stringify(memoryData)
       });
-      if (!response.ok) throw new Error('Failed to create task');
+      if (!response.ok) throw new Error('Failed to create memory');
       const created = await response.json();
-      
-      // Immutability in React: Create a brand new array with the new task first
-      setTasks((prev) => [created, ...prev]);
+
+      // React Immutability: insert new memory and sort chronologically
+      setMemories((prev) => {
+        const updated = [created, ...prev];
+        return updated.sort((a, b) => new Date(b.date) - new Date(a.date));
+      });
     } catch (err) {
-      console.error('Error adding task:', err);
-      alert('Failed to save task to backend.');
+      console.error('Error adding memory:', err);
+      alert('Failed to save memory to backend.');
     }
   };
 
-  // Handler: Update Task Status (PUT to backend)
-  const handleStatusChange = async (id, newStatus) => {
+  // Handler: Toggle Core Memory (PUT)
+  const handleToggleCore = async (id, isCoreMemory) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
+      const response = await fetch(`/api/memories/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ isCoreMemory })
       });
-      if (!response.ok) throw new Error('Failed to update task');
+      if (!response.ok) throw new Error('Failed to update memory');
       const updated = await response.json();
 
-      // Update state immutably using map()
-      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      setMemories((prev) => prev.map((m) => (m.id === id ? updated : m)));
     } catch (err) {
-      console.error('Error updating task:', err);
-      alert('Failed to update task on backend.');
+      console.error('Error updating memory:', err);
+      alert('Failed to update core memory status.');
     }
   };
 
-  // Handler: Delete Task (DELETE from backend)
+  // Handler: Delete Memory (DELETE)
   const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this memory?')) return;
     try {
-      const response = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete task');
+      const response = await fetch(`/api/memories/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete memory');
 
-      // Remove from state immutably using filter()
-      setTasks((prev) => prev.filter((t) => t.id !== id));
+      setMemories((prev) => prev.filter((m) => m.id !== id));
     } catch (err) {
-      console.error('Error deleting task:', err);
-      alert('Failed to delete task.');
+      console.error('Error deleting memory:', err);
+      alert('Failed to delete memory.');
     }
   };
 
-  // Derived State (Computed on every render, no separate state variable needed!)
-  const filteredTasks = tasks.filter((task) => {
+  // Interactive Feature: Nostalgia Time Machine (Surprise Me!)
+  const handleRandomMemory = () => {
+    if (memories.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * memories.length);
+    const chosen = memories[randomIndex];
+    setHighlightedId(chosen.id);
+
+    // Scroll to the chosen memory card smoothly
+    setTimeout(() => {
+      const el = document.getElementById(`mem-${chosen.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+
+    // Remove highlight after 4 seconds
+    setTimeout(() => {
+      setHighlightedId(null);
+    }, 4000);
+  };
+
+  // Derived State (Computed on every render)
+  const filteredMemories = memories.filter((mem) => {
+    const q = search.toLowerCase();
     const matchesSearch =
-      task.title.toLowerCase().includes(search.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(search.toLowerCase()));
+      mem.title.toLowerCase().includes(q) ||
+      (mem.story && mem.story.toLowerCase().includes(q)) ||
+      (mem.location && mem.location.toLowerCase().includes(q)) ||
+      (mem.insideJoke && mem.insideJoke.toLowerCase().includes(q));
 
-    const matchesStatus = filterStatus === 'All' || task.status === filterStatus;
+    const matchesMood = moodFilter === 'All' || mem.mood === moodFilter;
+    const matchesCore = !coreOnly || mem.isCoreMemory;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesMood && matchesCore;
   });
 
+  // Derived Friendship Stats
+  const calculateDaysOfFriendship = () => {
+    if (memories.length === 0) return 0;
+    const timestamps = memories.map((m) => new Date(m.date).getTime()).filter((t) => !isNaN(t));
+    if (timestamps.length === 0) return 0;
+    const earliest = Math.min(...timestamps);
+    const diff = Math.abs(Date.now() - earliest);
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
   const stats = {
-    total: tasks.length,
-    todo: tasks.filter((t) => t.status === 'Todo').length,
-    inProgress: tasks.filter((t) => t.status === 'In Progress').length,
-    completed: tasks.filter((t) => t.status === 'Completed').length
+    daysOfFriendship: calculateDaysOfFriendship(),
+    totalMemories: memories.length,
+    coreMemories: memories.filter((m) => m.isCoreMemory).length,
+    adventures: memories.filter((m) => m.mood === 'Adventure').length
   };
 
   return (
     <div className="app-container">
-      {/* 1. Header Component */}
-      <Header totalTasks={stats.total} completedTasks={stats.completed} />
+      {/* 1. Header with branding and live days counter */}
+      <Header
+        daysOfFriendship={stats.daysOfFriendship}
+        coreMemoriesCount={stats.coreMemories}
+      />
 
       {/* 2. Educational Concept Banner */}
       <LearningBanner />
 
-      {/* 3. Stats Ribbon Component */}
-      <StatsRibbon stats={stats} />
+      {/* 3. Friendship Milestones Ribbon */}
+      <MilestonesRibbon stats={stats} />
 
-      {/* 4. Controls: Search, Filter Tabs & Add Task Button */}
+      {/* 4. Controls: Search, View Mode, Filter Pills, Random Memory & Add */}
       <section className="controls-bar glass-panel">
-        <div className="search-input-wrapper">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search tasks by title or keyword..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="controls-top-row">
+          <div className="search-input-wrapper">
+            <Search size={18} className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search memories by place, inside joke, or story..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="controls-actions">
+            {/* View Switcher: River vs Scrapbook Grid */}
+            <div className="view-toggle">
+              <button
+                className={`view-btn ${viewMode === 'river' ? 'active' : ''}`}
+                onClick={() => setViewMode('river')}
+                title="Timeline River View"
+              >
+                <GitCommit size={16} /> River
+              </button>
+              <button
+                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Scrapbook Grid View"
+              >
+                <LayoutGrid size={16} /> Scrapbook
+              </button>
+            </div>
+
+            {/* Nostalgia Time Machine */}
+            <button
+              className="btn-random"
+              onClick={handleRandomMemory}
+              title="Surprise me with a random memory!"
+            >
+              <Shuffle size={16} /> Surprise Me!
+            </button>
+
+            {/* Capture New Memory */}
+            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={18} /> Add Moment
+            </button>
+          </div>
         </div>
 
-        <div className="filter-tabs">
-          {['All', 'Todo', 'In Progress', 'Completed'].map((status) => (
+        {/* Mood Filter Pills & Core Memories Only Toggle */}
+        <div className="filter-pills-row">
+          {['All', 'Laughter', 'Adventure', 'Deep Talk', 'Milestone'].map((mood) => (
             <button
-              key={status}
-              className={`tab-btn ${filterStatus === status ? 'active' : ''}`}
-              onClick={() => setFilterStatus(status)}
+              key={mood}
+              className={`filter-pill ${moodFilter === mood ? 'active' : ''}`}
+              onClick={() => setMoodFilter(mood)}
             >
-              {status}
+              {mood === 'All' ? '✨ All Moments' : mood}
             </button>
           ))}
-        </div>
 
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={18} /> New Task
-        </button>
+          <button
+            className={`filter-pill ${coreOnly ? 'active' : ''}`}
+            style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+            onClick={() => setCoreOnly(!coreOnly)}
+          >
+            <Heart size={14} fill={coreOnly ? '#f43f5e' : 'none'} color="#f43f5e" />
+            Core Memories Only
+          </button>
+        </div>
       </section>
 
-      {/* 5. Error & Loading Notifications */}
+      {/* 5. Error & Retry notification */}
       {error && (
         <div style={{
           background: 'rgba(244, 63, 94, 0.1)',
@@ -166,46 +249,72 @@ export default function App() {
             <AlertCircle size={20} />
             <span>{error}</span>
           </div>
-          <button 
-            className="btn-secondary" 
+          <button
+            className="btn-secondary"
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
-            onClick={fetchTasks}
+            onClick={fetchMemories}
           >
             <RefreshCw size={14} /> Retry
           </button>
         </div>
       )}
 
-      {/* 6. Tasks Grid */}
-      <main className="tasks-grid">
+      {/* 6. Main Content: Timeline River or Scrapbook Grid */}
+      <main>
         {isLoading ? (
           <div className="empty-state">
-            <RefreshCw size={32} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
-            <p style={{ marginTop: '1rem' }}>Loading tasks from backend API...</p>
+            <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
+            <p style={{ marginTop: '1rem' }}>Loading moments from backend...</p>
           </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="empty-state">
-            <p className="empty-state-icon">📋</p>
-            <h3>No tasks found</h3>
-            <p>Try adjusting your search query or filter status, or click "New Task" to create one.</p>
+        ) : filteredMemories.length === 0 ? (
+          <div className="empty-state glass-panel">
+            <p className="empty-state-icon">📸</p>
+            <h3>No moments found</h3>
+            <p style={{ marginTop: '0.5rem' }}>
+              Try adjusting your search query or filters, or capture a brand new moment!
+            </p>
+          </div>
+        ) : viewMode === 'river' ? (
+          /* Timeline River Layout */
+          <div className="timeline-river">
+            {filteredMemories.map((memory, index) => (
+              <div
+                key={memory.id}
+                id={`mem-${memory.id}`}
+                className={`timeline-item ${index % 2 === 0 ? 'left' : 'right'}`}
+              >
+                <div className="timeline-node" />
+                <MemoryCard
+                  memory={memory}
+                  onToggleCore={handleToggleCore}
+                  onDelete={handleDelete}
+                  isHighlighted={highlightedId === memory.id}
+                />
+              </div>
+            ))}
           </div>
         ) : (
-          filteredTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={handleStatusChange}
-              onDelete={handleDelete}
-            />
-          ))
+          /* Scrapbook Grid Layout */
+          <div className="scrapbook-grid">
+            {filteredMemories.map((memory) => (
+              <div key={memory.id} id={`mem-${memory.id}`}>
+                <MemoryCard
+                  memory={memory}
+                  onToggleCore={handleToggleCore}
+                  onDelete={handleDelete}
+                  isHighlighted={highlightedId === memory.id}
+                />
+              </div>
+            ))}
+          </div>
         )}
       </main>
 
-      {/* 7. Modal Form */}
-      <TaskModal
+      {/* 7. Capture Memory Modal */}
+      <MemoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAddTask={handleAddTask}
+        onAddMemory={handleAddMemory}
       />
     </div>
   );

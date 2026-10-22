@@ -5,146 +5,166 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DATA_FILE = path.join(__dirname, 'data', 'tasks.json');
+const DATA_FILE = path.join(__dirname, 'data', 'memories.json');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Helper to read tasks
-function getTasks() {
+// Helper to read memories
+function getMemories() {
   try {
     if (!fs.existsSync(DATA_FILE)) {
       return [];
     }
     const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const memories = JSON.parse(raw);
+    // Sort chronologically by default (newest first or oldest first)
+    return memories.sort((a, b) => new Date(b.date) - new Date(a.date));
   } catch (err) {
-    console.error('Error reading tasks file:', err);
+    console.error('Error reading memories file:', err);
     return [];
   }
 }
 
-// Helper to save tasks
-function saveTasks(tasks) {
+// Helper to save memories
+function saveMemories(memories) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
+    fs.writeFileSync(DATA_FILE, JSON.stringify(memories, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Error writing tasks file:', err);
+    console.error('Error writing memories file:', err);
   }
 }
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', app: 'Timeline Backend', timestamp: new Date().toISOString() });
 });
 
-// GET /api/tasks - Retrieve all tasks with optional query filters
-app.get('/api/tasks', (req, res) => {
-  let tasks = getTasks();
-  const { search, status, priority, category } = req.query;
+// GET /api/memories - Get all moments with search, mood, and year filtering
+app.get('/api/memories', (req, res) => {
+  let memories = getMemories();
+  const { search, mood, year, coreOnly } = req.query;
 
   if (search) {
     const q = search.toLowerCase();
-    tasks = tasks.filter(t => 
-      t.title.toLowerCase().includes(q) || 
-      (t.description && t.description.toLowerCase().includes(q))
+    memories = memories.filter(m =>
+      m.title.toLowerCase().includes(q) ||
+      (m.story && m.story.toLowerCase().includes(q)) ||
+      (m.location && m.location.toLowerCase().includes(q)) ||
+      (m.insideJoke && m.insideJoke.toLowerCase().includes(q))
     );
   }
 
-  if (status && status !== 'All') {
-    tasks = tasks.filter(t => t.status === status);
+  if (mood && mood !== 'All') {
+    memories = memories.filter(m => m.mood === mood);
   }
 
-  if (priority && priority !== 'All') {
-    tasks = tasks.filter(t => t.priority === priority);
+  if (year && year !== 'All') {
+    memories = memories.filter(m => new Date(m.date).getFullYear().toString() === year);
   }
 
-  if (category && category !== 'All') {
-    tasks = tasks.filter(t => t.category === category);
+  if (coreOnly === 'true') {
+    memories = memories.filter(m => m.isCoreMemory);
   }
 
-  res.json(tasks);
+  res.json(memories);
 });
 
-// GET /api/tasks/:id - Retrieve a single task by ID
-app.get('/api/tasks/:id', (req, res) => {
-  const tasks = getTasks();
-  const task = tasks.find(t => t.id === req.params.id);
-  if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+// GET /api/memories/:id - Get a single memory
+app.get('/api/memories/:id', (req, res) => {
+  const memories = getMemories();
+  const memory = memories.find(m => m.id === req.params.id);
+  if (!memory) {
+    return res.status(404).json({ error: 'Memory not found' });
   }
-  res.json(task);
+  res.json(memory);
 });
 
-// POST /api/tasks - Create a new task
-app.post('/api/tasks', (req, res) => {
-  const { title, description, category, priority, status } = req.body;
+// POST /api/memories - Add a new moment
+app.post('/api/memories', (req, res) => {
+  const { title, date, location, mood, story, insideJoke, isCoreMemory, imageUrl } = req.body;
   if (!title || title.trim() === '') {
-    return res.status(400).json({ error: 'Title is required' });
+    return res.status(400).json({ error: 'Memory title is required' });
   }
 
-  const tasks = getTasks();
-  const newTask = {
-    id: `task-${Date.now()}`,
+  const memories = getMemories();
+  const newMemory = {
+    id: `mem-${Date.now()}`,
     title: title.trim(),
-    description: description ? description.trim() : '',
-    category: category || 'General',
-    priority: priority || 'Medium',
-    status: status || 'Todo',
+    date: date || new Date().toISOString().split('T')[0],
+    location: location ? location.trim() : 'Unknown Place',
+    mood: mood || 'Laughter',
+    story: story ? story.trim() : '',
+    insideJoke: insideJoke ? insideJoke.trim() : '',
+    isCoreMemory: Boolean(isCoreMemory),
+    imageUrl: imageUrl && imageUrl.trim() !== '' ? imageUrl.trim() : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80',
     createdAt: new Date().toISOString()
   };
 
-  tasks.unshift(newTask);
-  saveTasks(tasks);
-  res.status(201).json(newTask);
+  memories.push(newMemory);
+  saveMemories(memories);
+  res.status(201).json(newMemory);
 });
 
-// PUT /api/tasks/:id - Update an existing task
-app.put('/api/tasks/:id', (req, res) => {
-  const tasks = getTasks();
-  const index = tasks.findIndex(t => t.id === req.params.id);
+// PUT /api/memories/:id - Update memory (e.g. toggle Core Memory ❤️)
+app.put('/api/memories/:id', (req, res) => {
+  const memories = getMemories();
+  const index = memories.findIndex(m => m.id === req.params.id);
   if (index === -1) {
-    return res.status(404).json({ error: 'Task not found' });
+    return res.status(404).json({ error: 'Memory not found' });
   }
 
   const updated = {
-    ...tasks[index],
+    ...memories[index],
     ...req.body,
-    id: tasks[index].id, // Prevent ID mutation
+    id: memories[index].id,
     updatedAt: new Date().toISOString()
   };
 
-  tasks[index] = updated;
-  saveTasks(tasks);
+  memories[index] = updated;
+  saveMemories(memories);
   res.json(updated);
 });
 
-// DELETE /api/tasks/:id - Delete a task
-app.delete('/api/tasks/:id', (req, res) => {
-  const tasks = getTasks();
-  const filtered = tasks.filter(t => t.id !== req.params.id);
-  if (filtered.length === tasks.length) {
-    return res.status(404).json({ error: 'Task not found' });
+// DELETE /api/memories/:id - Delete memory
+app.delete('/api/memories/:id', (req, res) => {
+  const memories = getMemories();
+  const filtered = memories.filter(m => m.id !== req.params.id);
+  if (filtered.length === memories.length) {
+    return res.status(404).json({ error: 'Memory not found' });
   }
 
-  saveTasks(filtered);
-  res.json({ message: 'Task deleted successfully', id: req.params.id });
+  saveMemories(filtered);
+  res.json({ message: 'Memory deleted', id: req.params.id });
 });
 
-// GET /api/stats - Dashboard analytics summary
+// GET /api/stats - Friendship analytics & milestone counters
 app.get('/api/stats', (req, res) => {
-  const tasks = getTasks();
-  const stats = {
-    total: tasks.length,
-    todo: tasks.filter(t => t.status === 'Todo').length,
-    inProgress: tasks.filter(t => t.status === 'In Progress').length,
-    completed: tasks.filter(t => t.status === 'Completed').length,
-    highPriority: tasks.filter(t => t.priority === 'High').length
-  };
-  res.json(stats);
+  const memories = getMemories();
+  if (memories.length === 0) {
+    return res.json({
+      daysOfFriendship: 0,
+      totalMemories: 0,
+      coreMemories: 0,
+      adventures: 0
+    });
+  }
+
+  // Calculate days since first memory
+  const dates = memories.map(m => new Date(m.date).getTime()).filter(t => !isNaN(t));
+  const earliestDate = Math.min(...dates);
+  const diffTime = Math.abs(Date.now() - earliestDate);
+  const daysOfFriendship = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  res.json({
+    daysOfFriendship,
+    totalMemories: memories.length,
+    coreMemories: memories.filter(m => m.isCoreMemory).length,
+    adventures: memories.filter(m => m.mood === 'Adventure').length
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
+  console.log(`Timeline Backend running on http://localhost:${PORT}`);
 });

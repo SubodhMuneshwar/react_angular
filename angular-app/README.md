@@ -1,19 +1,20 @@
 # Angular Frontend (`angular-app`)
 
-This directory will contain the **Angular** implementation of the **PulseTask** application.
+This directory will house the **Angular** implementation of the **Timeline** application.
 
 ## Learning Strategy: The React -> Angular Bridge
-Once we master the project in React, we will build the exact same UI, state management, and backend interactions in Angular. This enables direct concept mapping:
+Once we conclude our progressive mastery of Timeline in React, we will build the exact same UI, state management, and backend interactions in Angular.
 
-| React Concept | Angular Equivalent |
-|---|---|
-| JSX (`<div>{name}</div>`) | Template syntax (`<div>{{ name }}</div>`) |
-| `props` (`<Child title={x} />`) | `@Input()` / `input()` signal |
-| Event props (`<Child onSave={fn} />`) | `@Output()` / `output()` EventEmitter |
-| `useState(val)` | Angular Signals (`signal(val)`) |
-| `useEffect(() => {}, [dep])` | `effect()` or Lifecycle Hooks (`ngOnInit`) |
-| Context API / Zustand | Injectable Services (`@Injectable({ providedIn: 'root' })`) & Signals Store |
-| React Router | Angular Router (`RouterModule`) |
-| `fetch()` / Axios | Angular `HttpClient` + RxJS Observables / Signals |
+### Concept Translation Guide:
 
-*We will initialize the Angular CLI project here as soon as we conclude the React phase!*
+| Timeline Feature | React Implementation | Angular Equivalent |
+|---|---|---|
+| **Timeline River & Scrapbook** | JSX conditional rendering & `.map()` | `@for (memory of filteredMemories; track memory.id)` & `@if` / `@switch` |
+| **Memory Card** | Component receiving `memory` prop | Standalone Component with `@Input()` or `input()` signal |
+| **Toggle Core Memory ❤️** | Callback prop (`onToggleCore`) | Output EventEmitter `@Output()` or `output()` |
+| **Friendship Stats** | Derived state (JS date math) | Angular `computed()` Signals |
+| **Capture Moment Form** | Controlled form (`value` + `onChange`) | Reactive Forms (`FormGroup`, `FormControl`, `Validators`) |
+| **API Integration** | `useEffect` + `fetch()` | Angular `HttpClient` + RxJS Observables / Signals |
+| **Nostalgia Surprise Me** | `useRef` + `scrollIntoView()` | `@ViewChild()` or Angular ElementRef |
+
+*Angular CLI scaffolding will be launched here in Phase 2!*
