@@ -8,6 +8,10 @@ dist/
 build/
 out/
 .angular/
+bin/
+obj/
+*.user
+
 
 # Logs
 npm-debug.log*

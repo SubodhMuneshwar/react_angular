@@ -23,9 +23,14 @@ A full-stack, hands-on learning project to master **React** and **Angular** from
 
 ```
 react_angular/
-├── backend/                  # Shared pure Node.js + Express REST API
-│   ├── data/memories.json    # Persistent JSON storage for moments
-│   └── server.js             # Endpoints (/api/memories, /api/stats)
+├── backend/                  # .NET 10 ASP.NET Core Web API
+│   ├── Controllers/          # API Controllers (MemoriesController, StatsController)
+│   ├── Models/               # Domain Models (Memory.cs, FriendshipStats.cs)
+│   ├── DTOs/                 # Data Transfer Objects (CreateMemoryDto.cs)
+│   ├── Services/             # Business Logic & Persistence (IMemoryService, MemoryService)
+│   ├── Data/                 # Persistent storage (memories.json)
+│   ├── Program.cs            # Dependency Injection, Middleware & CORS
+│   └── backend.csproj        # Targets net10.0
 │
 ├── react-app/                # React 19 Frontend (Vite)
 │   ├── src/
@@ -48,15 +53,16 @@ react_angular/
 
 ## 🚀 Quick Start Guide
 
-### 1. Run Backend API
+### 1. Run the .NET 10 Backend API
 ```bash
 cd backend
-npm install
-npm start
-# Server: http://localhost:5000
+dotnet build
+dotnet bin/Debug/net10.0/backend.dll
+# API Server: http://localhost:5000 (OpenAPI / Health at /api/health)
 ```
 
-### 2. Run React Frontend
+### 2. Run the React Frontend
+
 ```bash
 cd react-app
 npm install

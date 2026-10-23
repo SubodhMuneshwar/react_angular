@@ -1,15 +1,16 @@
 [
   {
     "id": "mem-1",
-    "title": "First Meeting & The Endless Chai",
+    "title": "First Meeting \u0026 The Endless Chai",
     "date": "2022-09-15",
     "location": "College Canteen Corner",
     "mood": "Deep Talk",
     "story": "Both of us showed up early on day one. Ended up sharing a cutting chai and talking for three hours about music, dreams, and how neither of us had any idea what we were doing.",
-    "insideJoke": "\"One more cutting chai and we can solve world peace.\"",
+    "insideJoke": "\u0022One more cutting chai and we can solve world peace.\u0022",
     "isCoreMemory": true,
-    "imageUrl": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
-    "createdAt": "2022-09-15T10:00:00.000Z"
+    "imageUrl": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format\u0026fit=crop\u0026w=800\u0026q=80",
+    "createdAt": "2022-09-15T10:00:00Z",
+    "updatedAt": null
   },
   {
     "id": "mem-2",
@@ -17,23 +18,25 @@
     "date": "2023-04-12",
     "location": "Highway Dhaba",
     "mood": "Adventure",
-    "story": "We were supposed to sleep early for exams, but someone said 'let's go watch the sunrise'. Next thing we knew, we were 80km away eating hot parathas at 4:30 AM in the chilly breeze.",
-    "insideJoke": "\"Google Maps doesn't know our destiny, bro!\"",
+    "story": "We were supposed to sleep early for exams, but someone said \u0027let\u0027s go watch the sunrise\u0027. Next thing we knew, we were 80km away eating hot parathas at 4:30 AM in the chilly breeze.",
+    "insideJoke": "\u0022Google Maps doesn\u0027t know our destiny, bro!\u0022",
     "isCoreMemory": true,
-    "imageUrl": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
-    "createdAt": "2023-04-12T03:30:00.000Z"
+    "imageUrl": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format\u0026fit=crop\u0026w=800\u0026q=80",
+    "createdAt": "2023-04-12T03:30:00Z",
+    "updatedAt": null
   },
   {
     "id": "mem-3",
-    "title": "Hackathon All-Nighter Disaster & Triumph",
+    "title": "Hackathon All-Nighter Disaster \u0026 Triumph",
     "date": "2024-01-20",
     "location": "Tech Lab 3",
     "mood": "Laughter",
     "story": "Our laptop crashed at 4 AM with 2 hours until the demo. Survived on energy drinks, rebuilt the demo from memory, and somehow walked away with the 2nd place trophy.",
-    "insideJoke": "\"It's not a bug, it's a spontaneous surprise feature.\"",
+    "insideJoke": "\u0022It\u0027s not a bug, it\u0027s a spontaneous surprise feature.\u0022",
     "isCoreMemory": false,
-    "imageUrl": "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80",
-    "createdAt": "2024-01-20T04:00:00.000Z"
+    "imageUrl": "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format\u0026fit=crop\u0026w=800\u0026q=80",
+    "createdAt": "2024-01-20T04:00:00Z",
+    "updatedAt": null
   },
   {
     "id": "mem-4",
@@ -42,9 +45,10 @@
     "location": "Main Auditorium Lawn",
     "mood": "Milestone",
     "story": "Tossing our caps into the sky after all the chaotic semesters, late-night cram sessions, and endless laughs. A promise that no matter where life takes us, we stay brothers.",
-    "insideJoke": "\"Who allowed us to graduate?\"",
+    "insideJoke": "\u0022Who allowed us to graduate?\u0022",
     "isCoreMemory": true,
-    "imageUrl": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
-    "createdAt": "2025-05-30T14:00:00.000Z"
+    "imageUrl": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format\u0026fit=crop\u0026w=800\u0026q=80",
+    "createdAt": "2025-05-30T14:00:00Z",
+    "updatedAt": null
   }
 ]
