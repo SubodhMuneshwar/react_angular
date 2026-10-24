@@ -31,7 +31,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Configure Global Exception Handling Middleware
+app.UseMiddleware<backend.Middleware.ExceptionHandlingMiddleware>();
+
 // Configure the HTTP request pipeline (Middleware)
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
