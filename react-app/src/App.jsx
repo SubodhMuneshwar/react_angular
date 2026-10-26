@@ -1,107 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import MilestonesRibbon from './components/MilestonesRibbon';
 import MemoryCard from './components/MemoryCard';
 import MemoryModal from './components/MemoryModal';
 import LearningBanner from './components/LearningBanner';
-import { Plus, Search, Sparkles, LayoutGrid, GitCommit, Heart, AlertCircle, RefreshCw, Shuffle } from 'lucide-react';
+import Toast from './components/Toast';
+import { useMemories } from './hooks/useMemories';
+import { useDebounce } from './hooks/useDebounce';
+import { Plus, Search, LayoutGrid, GitCommit, Heart, AlertCircle, RefreshCw, Shuffle } from 'lucide-react';
 import './App.css';
 
 export default function App() {
-  // State: Component memory
-  const [memories, setMemories] = useState([]);
+  // Use Custom Hook for clean data architecture
+  const { memories, isLoading, error, refresh, addMemory, toggleCore, deleteMemory } = useMemories();
+
+  // Local UI State
   const [search, setSearch] = useState('');
   const [moodFilter, setMoodFilter] = useState('All');
   const [coreOnly, setCoreOnly] = useState(false);
   const [viewMode, setViewMode] = useState('river'); // 'river' or 'grid'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [highlightedId, setHighlightedId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
-  // Fetch memories from backend API
-  const fetchMemories = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/memories');
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-      const data = await response.json();
-      setMemories(data);
-    } catch (err) {
-      console.error('Failed to load memories:', err);
-      setError('Could not connect to backend server. Make sure it is running on port 5000.');
-    } finally {
-      setIsLoading(false);
-    }
+  // Custom Hook: Debounce search input by 300ms
+  const debouncedSearch = useDebounce(search, 300);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
   };
 
-  useEffect(() => {
-    fetchMemories();
-  }, []);
-
-  // Handler: Add Memory (POST)
+  // Wrapped Handlers with Toast Feedback
   const handleAddMemory = async (memoryData) => {
-    try {
-      const response = await fetch('/api/memories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(memoryData)
-      });
-      if (!response.ok) throw new Error('Failed to create memory');
-      const created = await response.json();
-
-      // React Immutability: insert new memory and sort chronologically
-      setMemories((prev) => {
-        const updated = [created, ...prev];
-        return updated.sort((a, b) => new Date(b.date) - new Date(a.date));
-      });
-    } catch (err) {
-      console.error('Error adding memory:', err);
-      alert('Failed to save memory to backend.');
+    const res = await addMemory(memoryData);
+    if (res.success) {
+      showToast('New moment captured in your Timeline! ✨');
+    } else {
+      showToast(res.error || 'Failed to save moment', 'error');
     }
   };
 
-  // Handler: Toggle Core Memory (PUT)
   const handleToggleCore = async (id, isCoreMemory) => {
-    try {
-      const response = await fetch(`/api/memories/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isCoreMemory })
-      });
-      if (!response.ok) throw new Error('Failed to update memory');
-      const updated = await response.json();
-
-      setMemories((prev) => prev.map((m) => (m.id === id ? updated : m)));
-    } catch (err) {
-      console.error('Error updating memory:', err);
-      alert('Failed to update core memory status.');
+    const res = await toggleCore(id, isCoreMemory);
+    if (res.success) {
+      showToast(isCoreMemory ? 'Starred as Core Memory! ❤️' : 'Removed from Core Memories.');
+    } else {
+      showToast('Could not update status on backend', 'error');
     }
   };
 
-  // Handler: Delete Memory (DELETE)
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this memory?')) return;
-    try {
-      const response = await fetch(`/api/memories/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete memory');
-
-      setMemories((prev) => prev.filter((m) => m.id !== id));
-    } catch (err) {
-      console.error('Error deleting memory:', err);
-      alert('Failed to delete memory.');
+    const res = await deleteMemory(id);
+    if (res.success) {
+      showToast('Moment deleted from Timeline.', 'success');
+    } else {
+      showToast('Failed to delete moment', 'error');
     }
   };
 
-  // Interactive Feature: Nostalgia Time Machine (Surprise Me!)
+  // Interactive Nostalgia Time Machine (Surprise Me!)
   const handleRandomMemory = () => {
     if (memories.length === 0) return;
     const randomIndex = Math.floor(Math.random() * memories.length);
     const chosen = memories[randomIndex];
     setHighlightedId(chosen.id);
 
-    // Scroll to the chosen memory card smoothly
     setTimeout(() => {
       const el = document.getElementById(`mem-${chosen.id}`);
       if (el) {
@@ -109,16 +73,16 @@ export default function App() {
       }
     }, 100);
 
-    // Remove highlight after 4 seconds
     setTimeout(() => {
       setHighlightedId(null);
     }, 4000);
   };
 
-  // Derived State (Computed on every render)
+  // Derived State: filtered with debounced search query
   const filteredMemories = memories.filter((mem) => {
-    const q = search.toLowerCase();
+    const q = debouncedSearch.toLowerCase().trim();
     const matchesSearch =
+      !q ||
       mem.title.toLowerCase().includes(q) ||
       (mem.story && mem.story.toLowerCase().includes(q)) ||
       (mem.location && mem.location.toLowerCase().includes(q)) ||
@@ -149,7 +113,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* 1. Header with branding and live days counter */}
+      {/* 1. Header with branding and live counters */}
       <Header
         daysOfFriendship={stats.daysOfFriendship}
         coreMemoriesCount={stats.coreMemories}
@@ -176,7 +140,7 @@ export default function App() {
           </div>
 
           <div className="controls-actions">
-            {/* View Switcher: River vs Scrapbook Grid */}
+            {/* View Switcher: River vs Scrapbook */}
             <div className="view-toggle">
               <button
                 className={`view-btn ${viewMode === 'river' ? 'active' : ''}`}
@@ -252,7 +216,7 @@ export default function App() {
           <button
             className="btn-secondary"
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
-            onClick={fetchMemories}
+            onClick={refresh}
           >
             <RefreshCw size={14} /> Retry
           </button>
@@ -264,7 +228,7 @@ export default function App() {
         {isLoading ? (
           <div className="empty-state">
             <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
-            <p style={{ marginTop: '1rem' }}>Loading moments from backend...</p>
+            <p style={{ marginTop: '1rem' }}>Loading moments from .NET 10 backend...</p>
           </div>
         ) : filteredMemories.length === 0 ? (
           <div className="empty-state glass-panel">
@@ -275,7 +239,6 @@ export default function App() {
             </p>
           </div>
         ) : viewMode === 'river' ? (
-          /* Timeline River Layout */
           <div className="timeline-river">
             {filteredMemories.map((memory, index) => (
               <div
@@ -294,7 +257,6 @@ export default function App() {
             ))}
           </div>
         ) : (
-          /* Scrapbook Grid Layout */
           <div className="scrapbook-grid">
             {filteredMemories.map((memory) => (
               <div key={memory.id} id={`mem-${memory.id}`}>
@@ -315,6 +277,13 @@ export default function App() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAddMemory={handleAddMemory}
+      />
+
+      {/* 8. Toast Feedback Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: '', type: 'success' })}
       />
     </div>
   );
