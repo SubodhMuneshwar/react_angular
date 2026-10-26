@@ -23,6 +23,9 @@ A full-stack, hands-on learning project to master **React** and **Angular** from
 
 ```
 react_angular/
+├── docs/                     # Architecture & learning references
+│   └── dotnet10_architecture_guide.md # Clean architecture, DI & patterns
+│
 ├── backend/                  # .NET 10 ASP.NET Core Web API
 │   ├── Controllers/          # API Controllers (MemoriesController, StatsController)
 │   ├── Models/               # Domain Models (Memory.cs, FriendshipStats.cs)
@@ -43,6 +46,7 @@ react_angular/
 │   │   ├── App.jsx                  # State management, views & backend sync
 │   │   ├── App.css                  # River & Scrapbook layouts
 │   │   └── index.css                # Nostalgic dark-mode design system
+
 │   └── vite.config.js               # Dev proxy to backend
 │
 └── angular-app/              # Angular Frontend (Bridging phase)
