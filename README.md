@@ -85,10 +85,12 @@ npm run dev
   - Immutability: Adding, toggling, and deleting memories immutably.
   - Derived State: Calculating "Days of Friendship" dynamically from dates without redundant state.
   - Backend integration: REST API synchronization (`GET`, `POST`, `PUT`, `DELETE`).
-- [ ] **Step 2: Intermediate React (Hooks & UX Polish)**
+- [x] **Step 2: Intermediate React (Hooks & UX Polish)**
   - Custom Hooks: `useMemories` and `useDebounce` to decouple logic from presentation.
-  - Optimistic UI updates (instant heart toggle before server responds).
-  - Search debouncing.
+  - Optimistic UI updates (instant heart toggle with automatic rollback on error).
+  - Search debouncing (300ms pause before filtering for buttery smooth typing).
+  - Toast notification system for user feedback.
+
 - [ ] **Step 3: Advanced React (Architecture & Context)**
   - Global State Management with React Context API.
   - Memoization with `useMemo` and `useCallback`.
