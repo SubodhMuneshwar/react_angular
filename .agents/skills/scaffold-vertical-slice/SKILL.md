@@ -3,13 +3,13 @@ name: scaffold-vertical-slice
 description: Scaffold an end-to-end full-stack feature slice across the .NET 10 backend (Model, DTO, Service, Controller, HTTP test) and React 19 frontend (Custom Hook, Component, UI state) with verification.
 ---
 
-# 🚀 Scaffold Full-Stack Vertical Slice
+# Scaffold Full-Stack Vertical Slice
 
 Use this skill when introducing a new domain feature or entity to the **Timeline** application. This checklist ensures consistency across the .NET 10 Web API backend and the React 19 frontend while adhering to Clean Architecture and end-to-end encryption boundaries.
 
 ---
 
-## 📋 Pre-Flight Diagnostics
+## 1. Pre-Flight Diagnostics
 Before adding files, verify that the active toolchains are operational:
 
 1. **Verify .NET 10 SDK**:
@@ -29,7 +29,7 @@ Before adding files, verify that the active toolchains are operational:
 
 ---
 
-## 🧱 Phase 1: Backend Vertical Slice (.NET 10)
+## 2. Phase 1: Backend Vertical Slice (.NET 10)
 
 For a target entity `<Entity>` (e.g., `Memory`, `Tag`, `Album`):
 
@@ -81,7 +81,7 @@ For a target entity `<Entity>` (e.g., `Memory`, `Tag`, `Album`):
 
 ---
 
-## 🎨 Phase 2: Frontend Vertical Slice (React 19)
+## 3. Phase 2: Frontend Vertical Slice (React 19)
 
 ### 1. Create Custom Hook
 * **Location**: `@react/src/hooks/use<Entity>s.js`
@@ -105,7 +105,7 @@ For a target entity `<Entity>` (e.g., `Memory`, `Tag`, `Album`):
 
 ---
 
-## 🔍 Phase 3: Verification Protocol
+## 4. Phase 3: Verification Protocol
 
 Execute the verification protocol before committing changes:
 
@@ -122,14 +122,28 @@ npm.cmd --prefix react run build
 
 ---
 
-## 🔄 Rollback Protocol (If Verification Fails)
+## 5. Safe Rollback Protocol (Targeted Revert)
 
-If builds fail and cannot be immediately resolved:
+> [!WARNING]
+> Never run global destructive commands such as `git clean -fd` or `git restore .`, as they can permanently delete unrelated uncommitted work across the repository.
+
+If verification fails and issues cannot be immediately resolved, revert **only** the specific `<Entity>` files created or touched during this slice run:
+
 ```powershell
-# Review unstaged changes
+# 1. Review status of modified and untracked files
 git status
 
-# Revert working tree safely
-git restore .
-git clean -fd
+# 2. Revert modified shared files touched during this slice
+git restore backend/Program.cs react/src/App.jsx
+
+# 3. Remove only new entity-specific files created during this run
+Remove-Item -Force backend/Models/<Entity>.cs -ErrorAction SilentlyContinue
+Remove-Item -Force backend/DTOs/Create<Entity>Dto.cs, backend/DTOs/Update<Entity>Dto.cs -ErrorAction SilentlyContinue
+Remove-Item -Force backend/Services/I<Entity>Service.cs, backend/Services/<Entity>Service.cs -ErrorAction SilentlyContinue
+Remove-Item -Force backend/Controllers/<Entity>sController.cs -ErrorAction SilentlyContinue
+Remove-Item -Force react/src/hooks/use<Entity>s.js -ErrorAction SilentlyContinue
+Remove-Item -Force react/src/components/<Entity>Card.jsx, react/src/components/<Entity>Modal.jsx -ErrorAction SilentlyContinue
+
+# 4. Verify working tree status
+git status
 ```

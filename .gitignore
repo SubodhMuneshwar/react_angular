@@ -32,7 +32,15 @@ pnpm-debug.log*
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 .DS_Store
 Thumbs.db
+
+# .NET local configuration and secrets
+appsettings.Development.json
+appsettings.Local.json
+
+# Google Cloud & Google Drive credentials / secrets
+*client_secret*.json
+*credentials*.json
+*-service-account*.json

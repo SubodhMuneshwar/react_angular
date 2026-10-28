@@ -8,9 +8,11 @@ A hands-on, full-stack journey from **Beginner to Advanced**, comparing **React*
 
 ```
 react_angular/
-├── react-app/    # Frontend: React 19 + Vite
-├── backend/      # Backend: .NET 10 ASP.NET Core Web API
-└── angular-app/  # Frontend: Angular (Phase 2)
+├── react/        # Frontend (Primary): React 19 + Vite
+├── backend/      # Backend API: .NET 10 ASP.NET Core Web API
+├── angular/      # Frontend (Phase 2): Angular 22
+├── docs/         # Architectural guides & documentation
+└── .agents/      # Antigravity skills & MCP configuration
 ```
 
 ---
